@@ -190,3 +190,40 @@ body {
 .btn-delete:hover {
   opacity: 1;
 }
+
+.btn-income {
+  background: #60a5fa;
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 11px;
+  cursor: pointer;
+}
+
+.total-income {
+  color: #6ee7b7;
+  font-family: monospace;
+  font-weight: 700;
+}
+
+.income-amount {
+  font-size: 15px;
+  font-weight: 700;
+  color: #6ee7b7;
+  font-family: monospace;
+}
+
+.progress-bar {
+  background: #1a1a1a;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}

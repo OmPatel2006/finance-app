@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import './App.css';
 import Expenses from './Expenses';
+import Income from './Income';
+import Budget from './Budget';
 
 const TABS = ['Overview', 'Expenses', 'Budget', 'Savings', 'Income'];
 
 function App() {
   const [activeTab, setActiveTab] = useState('Overview');
+  const [expenses, setExpenses] = useState([]);
+  const [incomes, setIncomes] = useState([]);
+  const [budgets, setBudgets] = useState([]);
 
   return (
     <div className="app">
@@ -28,10 +33,10 @@ function App() {
 
       <div className="content">
         {activeTab === 'Overview' && <p style={{color:'#555'}}>Overview coming soon...</p>}
-        {activeTab === 'Expenses' && <Expenses />}
-        {activeTab === 'Budget' && <p style={{color:'#555'}}>Budget coming soon...</p>}
+        {activeTab === 'Expenses' && <Expenses expenses={expenses} setExpenses={setExpenses} />}
+        {activeTab === 'Budget' && <Budget expenses={expenses} budgets={budgets} setBudgets={setBudgets} />}
         {activeTab === 'Savings' && <p style={{color:'#555'}}>Savings coming soon...</p>}
-        {activeTab === 'Income' && <p style={{color:'#555'}}>Income coming soon...</p>}
+        {activeTab === 'Income' && <Income incomes={incomes} setIncomes={setIncomes} />}
       </div>
     </div>
   );

@@ -1,25 +1,21 @@
-import { useState } from 'react';
-
 const CATEGORIES = ['Food', 'Housing', 'Transport', 'Health', 'Entertainment', 'Shopping', 'Utilities', 'Other'];
 
-function Expenses() {
-  const [expenses, setExpenses] = useState([]);
-  const [desc, setDesc] = useState('');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('Food');
-
-  const addExpense = () => {
+function Expenses({ expenses, setExpenses }) {
+  const addExpense = (e) => {
+    e.preventDefault();
+    const desc = e.target.desc.value;
+    const amount = e.target.amount.value;
+    const category = e.target.category.value;
     if (!desc || !amount) return;
     const newExpense = {
       id: Date.now(),
-      desc: desc,
+      desc,
       amount: parseFloat(amount),
-      category: category,
+      category,
       date: new Date().toLocaleDateString(),
     };
     setExpenses([newExpense, ...expenses]);
-    setDesc('');
-    setAmount('');
+    e.target.reset();
   };
 
   const removeExpense = (id) => {
@@ -39,33 +35,14 @@ function Expenses() {
         </div>
       </div>
 
-      <div className="form-card">
-        <input
-          className="input"
-          placeholder="Description (e.g. Coffee)"
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
-        />
-        <input
-          className="input"
-          placeholder="Amount (e.g. 4.50)"
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-        <select
-          className="input"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          {CATEGORIES.map((cat) => (
-            <option key={cat}>{cat}</option>
-          ))}
+      <form className="form-card" onSubmit={addExpense}>
+        <input className="input" name="desc" placeholder="Description (e.g. Coffee)" />
+        <input className="input" name="amount" placeholder="Amount (e.g. 4.50)" type="number" step="0.01" />
+        <select className="input" name="category">
+          {CATEGORIES.map((cat) => <option key={cat}>{cat}</option>)}
         </select>
-        <button className="btn-add" onClick={addExpense}>
-          + Add Expense
-        </button>
-      </div>
+        <button type="submit" className="btn-add">+ Add Expense</button>
+      </form>
 
       {expenses.length === 0 ? (
         <p className="empty">No expenses yet. Add one above!</p>
