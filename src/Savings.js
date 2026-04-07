@@ -1,31 +1,25 @@
 import { useState } from 'react';
 
-function Savings() {
-  const [goals, setGoals] = useState([]);
+function Savings({ goals, addGoal, removeGoal, updateGoal }) {
   const [contrib, setContrib] = useState(null);
   const [contribAmt, setContribAmt] = useState('');
 
-  const addGoal = (e) => {
+  const handleAddGoal = (e) => {
     e.preventDefault();
     const name = e.target.name.value;
     const target = parseFloat(e.target.target.value);
     const saved = parseFloat(e.target.saved.value || 0);
     if (!name || !target) return;
-    setGoals([...goals, { id: Date.now(), name, target, saved }]);
+    addGoal({ name, target, saved });
     e.target.reset();
   };
 
-  const removeGoal = (id) => setGoals(goals.filter(g => g.id !== id));
-
-  const addContrib = (e) => {
+  const handleContrib = (e) => {
     e.preventDefault();
     const amt = parseFloat(contribAmt);
     if (!amt) return;
-    setGoals(goals.map(g =>
-      g.id === contrib
-        ? { ...g, saved: Math.min(g.saved + amt, g.target) }
-        : g
-    ));
+    const goal = goals.find(g => g.id === contrib);
+    updateGoal(contrib, Math.min(goal.saved + amt, goal.target));
     setContrib(null);
     setContribAmt('');
   };
@@ -37,7 +31,7 @@ function Savings() {
       <h2 style={{ marginBottom: 8 }}>Savings Goals</h2>
       <p className="total-label" style={{ marginBottom: 20 }}>Track progress toward your goals</p>
 
-      <form className="form-card" onSubmit={addGoal}>
+      <form className="form-card" onSubmit={handleAddGoal}>
         <input className="input" name="name" placeholder="Goal name (e.g. Vacation)" />
         <input className="input" name="target" placeholder="Target amount (e.g. 2000)" type="number" step="0.01" />
         <input className="input" name="saved" placeholder="Already saved (e.g. 500) — optional" type="number" step="0.01" />
@@ -54,7 +48,6 @@ function Savings() {
             const done = pct >= 100;
             const circumference = 2 * Math.PI * 36;
             const strokeDash = (pct / 100) * circumference;
-
             return (
               <div key={g.id} className="goal-card">
                 <div className="goal-top">
@@ -62,50 +55,33 @@ function Savings() {
                   {done && <span style={{ fontSize: 18 }}>🎉</span>}
                   <button className="btn-delete" onClick={() => removeGoal(g.id)}>🗑</button>
                 </div>
-
                 <div className="goal-ring-wrap">
                   <svg width="100" height="100" viewBox="0 0 100 100">
                     <circle cx="50" cy="50" r="36" fill="none" stroke="#1e1e1e" strokeWidth="8" />
-                    <circle
-                      cx="50" cy="50" r="36"
-                      fill="none"
-                      stroke={color}
-                      strokeWidth="8"
+                    <circle cx="50" cy="50" r="36" fill="none" stroke={color} strokeWidth="8"
                       strokeLinecap="round"
                       strokeDasharray={`${strokeDash} ${circumference}`}
-                      transform="rotate(-90 50 50)"
-                    />
+                      transform="rotate(-90 50 50)" />
                   </svg>
                   <div className="goal-pct" style={{ color }}>{pct.toFixed(0)}%</div>
                 </div>
-
                 <div className="goal-amounts">
                   <span style={{ color: '#aaa', fontFamily: 'monospace', fontSize: 13 }}>
                     ${g.saved.toFixed(2)} / ${g.target.toFixed(2)}
                   </span>
                 </div>
-
                 {!done && (
                   contrib === g.id ? (
-                    <form onSubmit={addContrib} style={{ display: 'flex', gap: 6, marginTop: 10 }}>
-                      <input
-                        className="input"
-                        placeholder="Amount"
-                        type="number"
-                        step="0.01"
-                        value={contribAmt}
-                        onChange={e => setContribAmt(e.target.value)}
-                        style={{ flex: 1 }}
-                      />
+                    <form onSubmit={handleContrib} style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                      <input className="input" placeholder="Amount" type="number" step="0.01"
+                        value={contribAmt} onChange={e => setContribAmt(e.target.value)} style={{ flex: 1 }} />
                       <button type="submit" className="btn-add" style={{ width: 'auto', padding: '0 14px' }}>✓</button>
-                      <button type="button" onClick={() => setContrib(null)} style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#888', borderRadius: 10, padding: '0 12px', cursor: 'pointer' }}>✕</button>
+                      <button type="button" onClick={() => setContrib(null)}
+                        style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#888', borderRadius: 10, padding: '0 12px', cursor: 'pointer' }}>✕</button>
                     </form>
                   ) : (
-                    <button
-                      className="btn-add"
-                      style={{ marginTop: 10, background: color, color: '#000' }}
-                      onClick={() => setContrib(g.id)}
-                    >
+                    <button className="btn-add" style={{ marginTop: 10, background: color, color: '#000' }}
+                      onClick={() => setContrib(g.id)}>
                       + Add Funds
                     </button>
                   )

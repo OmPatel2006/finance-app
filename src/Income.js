@@ -1,25 +1,19 @@
 const INCOME_TYPES = ['Salary', 'Freelance', 'Investment', 'Rental', 'Gift', 'Other'];
 
-function Income({ incomes, setIncomes }) {
-  const addIncome = (e) => {
+function Income({ incomes, addIncome, removeIncome }) {
+  const handleSubmit = (e) => {
     e.preventDefault();
     const desc = e.target.desc.value;
     const amount = e.target.amount.value;
     const type = e.target.type.value;
     if (!desc || !amount) return;
-    const newIncome = {
-      id: Date.now(),
+    addIncome({
       desc,
       amount: parseFloat(amount),
       type,
       date: new Date().toLocaleDateString(),
-    };
-    setIncomes([newIncome, ...incomes]);
+    });
     e.target.reset();
-  };
-
-  const removeIncome = (id) => {
-    setIncomes(incomes.filter((i) => i.id !== id));
   };
 
   const total = incomes.reduce((sum, i) => sum + i.amount, 0);
@@ -35,7 +29,7 @@ function Income({ incomes, setIncomes }) {
         </div>
       </div>
 
-      <form className="form-card" onSubmit={addIncome}>
+      <form className="form-card" onSubmit={handleSubmit}>
         <input className="input" name="desc" placeholder="Description (e.g. Monthly Salary)" />
         <input className="input" name="amount" placeholder="Amount (e.g. 3000)" type="number" step="0.01" />
         <select className="input" name="type">

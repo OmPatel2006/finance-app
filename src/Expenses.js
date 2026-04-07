@@ -1,25 +1,19 @@
 const CATEGORIES = ['Food', 'Housing', 'Transport', 'Health', 'Entertainment', 'Shopping', 'Utilities', 'Other'];
 
-function Expenses({ expenses, setExpenses }) {
-  const addExpense = (e) => {
+function Expenses({ expenses, addExpense, removeExpense }) {
+  const handleSubmit = (e) => {
     e.preventDefault();
     const desc = e.target.desc.value;
     const amount = e.target.amount.value;
     const category = e.target.category.value;
     if (!desc || !amount) return;
-    const newExpense = {
-      id: Date.now(),
+    addExpense({
       desc,
       amount: parseFloat(amount),
       category,
       date: new Date().toLocaleDateString(),
-    };
-    setExpenses([newExpense, ...expenses]);
+    });
     e.target.reset();
-  };
-
-  const removeExpense = (id) => {
-    setExpenses(expenses.filter((e) => e.id !== id));
   };
 
   const total = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -35,7 +29,7 @@ function Expenses({ expenses, setExpenses }) {
         </div>
       </div>
 
-      <form className="form-card" onSubmit={addExpense}>
+      <form className="form-card" onSubmit={handleSubmit}>
         <input className="input" name="desc" placeholder="Description (e.g. Coffee)" />
         <input className="input" name="amount" placeholder="Amount (e.g. 4.50)" type="number" step="0.01" />
         <select className="input" name="category">

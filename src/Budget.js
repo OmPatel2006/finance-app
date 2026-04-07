@@ -1,23 +1,14 @@
-import { useState } from 'react';
-
 const CATEGORIES = ['Food', 'Housing', 'Transport', 'Health', 'Entertainment', 'Shopping', 'Utilities', 'Other'];
 
-function Budget({ expenses, budgets, setBudgets }) {
-  const addBudget = (e) => {
+function Budget({ expenses, budgets, addBudget, removeBudget }) {
+  const handleSubmit = (e) => {
     e.preventDefault();
     const category = e.target.category.value;
     const limit = parseFloat(e.target.limit.value);
     if (!limit) return;
-    const exists = budgets.find(b => b.category === category);
-    if (exists) {
-      setBudgets(budgets.map(b => b.category === category ? { ...b, limit } : b));
-    } else {
-      setBudgets([...budgets, { id: Date.now(), category, limit }]);
-    }
+    addBudget({ category, limit });
     e.target.reset();
   };
-
-  const removeBudget = (id) => setBudgets(budgets.filter(b => b.id !== id));
 
   const spentOn = (category) =>
     expenses.filter(e => e.category === category).reduce((sum, e) => sum + e.amount, 0);
@@ -27,7 +18,7 @@ function Budget({ expenses, budgets, setBudgets }) {
       <h2 style={{ marginBottom: 8 }}>Budget</h2>
       <p className="total-label" style={{ marginBottom: 20 }}>Set monthly limits per category</p>
 
-      <form className="form-card" onSubmit={addBudget}>
+      <form className="form-card" onSubmit={handleSubmit}>
         <select className="input" name="category">
           {CATEGORIES.map(cat => <option key={cat}>{cat}</option>)}
         </select>
@@ -56,13 +47,7 @@ function Budget({ expenses, budgets, setBudgets }) {
                   </div>
                 </div>
                 <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{
-                      width: `${pct}%`,
-                      background: over ? '#f87171' : '#6ee7b7',
-                    }}
-                  />
+                  <div className="progress-fill" style={{ width: `${pct}%`, background: over ? '#f87171' : '#6ee7b7' }} />
                 </div>
                 <div style={{ fontSize: 11, color: '#555' }}>
                   {pct.toFixed(0)}% used · ${Math.max(b.limit - spent, 0).toFixed(2)} remaining
