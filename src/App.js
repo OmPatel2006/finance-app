@@ -5,14 +5,12 @@ import Income from './Income';
 import Budget from './Budget';
 import Savings from './Savings';
 import Overview from './Overview';
-import { db } from './firebase';
+import Login from './Login';
+import { db, auth } from './firebase';
 import {
-  collection,
-  addDoc,
-  deleteDoc,
-  doc,
-  onSnapshot,
+  collection, addDoc, deleteDoc, doc, onSnapshot, updateDoc, query, where
 } from 'firebase/firestore';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const TABS = ['Overview', 'Expenses', 'Budget', 'Savings', 'Income'];
 
@@ -22,80 +20,86 @@ function App() {
   const [incomes, setIncomes] = useState([]);
   const [budgets, setBudgets] = useState([]);
   const [goals, setGoals] = useState([]);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Load expenses from Firestore in real time
+  // Listen for auth state changes
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'expenses'), (snapshot) => {
-      setExpenses(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setLoading(false);
     });
     return unsub;
   }, []);
 
-  // Load incomes from Firestore in real time
+  // Load data when user logs in
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'incomes'), (snapshot) => {
-      setIncomes(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    return unsub;
-  }, []);
+    if (!user) return;
 
-  // Load budgets from Firestore in real time
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'budgets'), (snapshot) => {
-      setBudgets(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    return unsub;
-  }, []);
+    const q = (col) => query(collection(db, col), where('uid', '==', user.uid));
 
-  // Load goals from Firestore in real time
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'goals'), (snapshot) => {
-      setGoals(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    return unsub;
-  }, []);
+    const unsubExpenses = onSnapshot(q('expenses'), (snap) =>
+      setExpenses(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+
+    const unsubIncomes = onSnapshot(q('incomes'), (snap) =>
+      setIncomes(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+
+    const unsubBudgets = onSnapshot(q('budgets'), (snap) =>
+      setBudgets(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+
+    const unsubGoals = onSnapshot(q('goals'), (snap) =>
+      setGoals(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+
+    return () => {
+      unsubExpenses();
+      unsubIncomes();
+      unsubBudgets();
+      unsubGoals();
+    };
+  }, [user]);
 
   // Expenses
-  const addExpense = async (expense) => {
-    await addDoc(collection(db, 'expenses'), expense);
-  };
-  const removeExpense = async (id) => {
-    await deleteDoc(doc(db, 'expenses', id));
-  };
+  const addExpense = (expense) => addDoc(collection(db, 'expenses'), { ...expense, uid: user.uid });
+  const removeExpense = (id) => deleteDoc(doc(db, 'expenses', id));
 
   // Incomes
-  const addIncome = async (income) => {
-    await addDoc(collection(db, 'incomes'), income);
-  };
-  const removeIncome = async (id) => {
-    await deleteDoc(doc(db, 'incomes', id));
-  };
+  const addIncome = (income) => addDoc(collection(db, 'incomes'), { ...income, uid: user.uid });
+  const removeIncome = (id) => deleteDoc(doc(db, 'incomes', id));
 
   // Budgets
-  const addBudget = async (budget) => {
-    await addDoc(collection(db, 'budgets'), budget);
-  };
-  const removeBudget = async (id) => {
-    await deleteDoc(doc(db, 'budgets', id));
-  };
+  const addBudget = (budget) => addDoc(collection(db, 'budgets'), { ...budget, uid: user.uid });
+  const removeBudget = (id) => deleteDoc(doc(db, 'budgets', id));
 
   // Goals
-  const addGoal = async (goal) => {
-    await addDoc(collection(db, 'goals'), goal);
-  };
-  const removeGoal = async (id) => {
-    await deleteDoc(doc(db, 'goals', id));
-  };
-  const updateGoal = async (id, saved) => {
-    const { updateDoc } = await import('firebase/firestore');
-    await updateDoc(doc(db, 'goals', id), { saved });
-  };
+  const addGoal = (goal) => addDoc(collection(db, 'goals'), { ...goal, uid: user.uid });
+  const removeGoal = (id) => deleteDoc(doc(db, 'goals', id));
+  const updateGoal = (id, saved) => updateDoc(doc(db, 'goals', id), { saved });
+
+  const handleLogout = () => signOut(auth);
+
+  if (loading) return (
+    <div style={{ background: '#080808', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontFamily: 'sans-serif' }}>
+      Loading...
+    </div>
+  );
+
+  if (!user) return <Login />;
 
   return (
     <div className="app">
-      <div className="header">
-        <div className="logo">FinanceOS</div>
-        <div className="tagline">Your personal finance manager</div>
+      <div className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div className="logo">FinanceOS</div>
+          <div className="tagline">Your personal finance manager</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <img src={user.photoURL} alt="avatar" style={{ width: 32, height: 32, borderRadius: '50%' }} />
+          <button onClick={handleLogout} style={{
+            background: 'transparent', border: '1px solid #2a2a2a',
+            color: '#888', borderRadius: 8, padding: '6px 12px',
+            fontSize: 12, cursor: 'pointer',
+          }}>Logout</button>
+        </div>
       </div>
 
       <div className="tabs">
