@@ -89,7 +89,7 @@ function App() {
     <div className="app">
       <div className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div className="logo">FinanceOS</div>
+          <div className="logo">FinTrack</div>
           <div className="tagline">Your personal finance manager</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

@@ -35,7 +35,7 @@ function Login() {
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           marginBottom: 8,
-        }}>FinanceOS</div>
+        }}>FinTrack</div>
 
         <div style={{ color: '#555', fontSize: 14, marginBottom: 36 }}>
           Your personal finance manager
